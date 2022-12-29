@@ -18,17 +18,25 @@ button svg {
   @apply transition-all
 }
 
+button:disabled {
+  @apply cursor-not-allowed;
+}
+
 button:disabled svg {
   @apply fill-slate-300
 }
 
 input[type='range'] {
-  @apply overflow-hidden appearance-none h-4 relative rounded-full bg-transparent
+  @apply overflow-hidden appearance-none h-4 relative rounded-full bg-transparent transition-all
+}
+
+input[type='range']:disabled::-webkit-slider-thumb {
+  @apply text-gray-300 border-gray-300 cursor-not-allowed;
 }
 
 
 input[type='range']::-webkit-slider-thumb {
-  @apply h-4 w-4 rounded-xl appearance-none bg-white relative text-blue-500 border-blue-500 border-solid border-4 cursor-pointer;
+  @apply h-4 w-4 rounded-xl appearance-none bg-white relative text-blue-500 border-blue-500 border-solid border-4 cursor-pointer transition-all;
   box-shadow: 0 0 0 3px #fff inset,0 0 0 6px #fff inset, 0 0 0 2rem #fff inset, calc(100vw * -1 - 0.6rem) 0 0 100vw; top: 50%; transform: translateY(-50%);
 }
 

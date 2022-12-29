@@ -1,0 +1,59 @@
+.pg-card {
+  @apply bg-white rounded-xl shadow-md p-5 flex-1 max-w-lg;
+}
+
+.pg-card-field {
+  @apply w-full flex antialiased text-lg bg-gray-50 py-2 px-4 rounded-md font-mono
+}
+.pg-card-field input[readonly] {
+  @apply flex-1 bg-transparent
+}
+
+.pg-card div,
+.pg-card span {
+  @apply select-none;
+}
+
+button svg {
+  @apply transition-all
+}
+
+button:disabled svg {
+  @apply fill-slate-300
+}
+
+input[type='range'] {
+  @apply overflow-hidden appearance-none h-4 relative rounded-full bg-transparent
+}
+
+
+input[type='range']::-webkit-slider-thumb {
+  @apply h-4 w-4 rounded-xl appearance-none bg-white relative text-blue-500 border-blue-500 border-solid border-4 cursor-pointer;
+  box-shadow: 0 0 0 3px #fff inset,0 0 0 6px #fff inset, 0 0 0 2rem #fff inset, calc(100vw * -1 - 0.6rem) 0 0 100vw; top: 50%; transform: translateY(-50%);
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  @apply bg-gray-200 h-1 rounded-full
+}
+
+
+input[type="checkbox"],
+input[type="radio"] {
+  @apply w-4 h-4 appearance-none border-solid border-2 rounded-full bg-blue-50 border-blue-200 transition-all;
+}
+input[type="checkbox"]:checked {
+  @apply bg-blue-500 border-blue-500 transition-all;
+  background-image: linear-gradient(-45deg,transparent 65%,rgb(59 130 246) 65.99%),linear-gradient(45deg,transparent 75%,rgb(59 130 246) 75.99%),linear-gradient(-45deg,rgb(59 130 246) 40%,transparent 40.99%),linear-gradient(45deg, rgb(59 130 246) 30%,#fff 30.99%, #fff 40%,transparent 40.99%),linear-gradient(-45deg, #fff 50%, rgb(59 130 246) 50.99%); background-repeat: no-repeat; background-position: center;
+}
+
+input[type="radio"]:checked {
+  @apply bg-blue-500 border-blue-500;
+  box-shadow: 0 0 0 2px #fff inset,0 0 0 2px rgb(59 130 246) inset;
+}
+
+input[type="radio"]:disabled {
+  @apply opacity-50
+}
+input[type="radio"]:disabled ~ label {
+  @apply text-gray-300
+}

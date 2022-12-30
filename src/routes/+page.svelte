@@ -11,6 +11,7 @@
 	} from '../constants/characters';
 	import './page.css';
 
+
 	let result = '';
 
 	let copiedOK = false;

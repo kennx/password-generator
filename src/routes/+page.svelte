@@ -1,164 +1,131 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
+	import { spring } from 'svelte/motion';
 	import { syncLock } from '../svg/image';
+	import {
+		UPPER_CHARACTERS,
+		LOWER_CHARACTERS,
+		NUMBER_CHARACTERS,
+		SPECIAL_CHARACTERS
+	} from '../constants/characters';
 	import './page.css';
 
-	$: wordLength = 12;
-	$: includesUpperCase = true;
-	$: includesLowerCase = true;
-	$: includesNumber = true;
-	$: includesSpecial = true;
+	let result = '';
 
-	$: firstDefault = true;
-	$: firstUpper = false;
-	$: firstLower = false;
-	$: firstNumber = false;
-	$: firstSpecial = false;
+	let copiedOK = false;
+	let clicked = false;
 
-	$: result = '';
+	let wordLength = 12;
+	let includesUpperCase = true;
+	let includesLowerCase = true;
+	let includesNumber = true;
+	let includesSpecial = true;
 
-	$: disabled =
-		!includesUpperCase && !includesLowerCase && !includesNumber && !includesSpecial;
+	let upperSize = 3;
+	let lowerSize = 3;
+	let numberSize = 3;
+	let specialSize = 3;
 
-	const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	const lower = 'abcdefghijklmnopqrstuvwxyz';
-	const number = '1234567890';
-	const special = `~!@#$%^&*()-=_+[]\{}|;':",./<>?`;
+	spring({
+		stiffness: 0.1,
+		damping: 0.1
+	});
+	let rotate = spring(0);
+
+	let firstLetter = 0;
+
+	$: if (!includesUpperCase && firstLetter === 1) {
+		firstLetter = 0;
+	}
+	$: if (!includesLowerCase && firstLetter === 2) {
+		firstLetter = 0;
+	}
+	$: if (!includesNumber && firstLetter === 3) {
+		firstLetter = 0;
+	}
+	$: if (!includesSpecial && firstLetter === 4) {
+		firstLetter = 0;
+	}
+
+	$: if (!includesUpperCase) {
+		upperSize = 0;
+	} else if (!includesLowerCase) {
+		lowerSize = 0;
+	} else if (!includesNumber) {
+		numberSize = 0;
+	} else if (!includesSpecial) {
+		specialSize = 0;
+	}
+
+	$: disabled = !includesUpperCase && !includesLowerCase && !includesNumber && !includesSpecial;
+
+	function randomLength(min: number, max: number) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
 
 	function inputRangeChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		wordLength = Number(input.value);
-		generateCalcArray();
 	}
 
-	function inputCheckChange(event: Event) {
-		const input = event.target as HTMLInputElement;
-		switch (input.id) {
-			case 'includesUpperCase':
-				includesUpperCase = input.checked;
-				if (!input.checked && firstUpper) {
-					firstDefault = true;
-				}
-				break;
-			case 'includesLowerCase':
-				includesLowerCase = input.checked;
-				if (!input.checked && firstLower) {
-					firstLower = false;
-					firstDefault = true;
-				}
-				break;
-			case 'includesNumber':
-				includesNumber = input.checked;
-				if (!input.checked && firstNumber) {
-					firstNumber = false;
-					firstDefault = true;
-				}
-				break;
-			case 'includesSpecial':
-				includesSpecial = input.checked;
-				if (!input.checked && firstSpecial) {
-					firstSpecial = false;
-					firstDefault = true;
-				}
-				break;
-		}
-		disabled = !includesUpperCase && !includesLowerCase && !includesNumber && !includesSpecial;
-		console.log(getArray());
-	}
-
-	function inputRadioChange(event: Event) {
-		const input = event.target as HTMLInputElement;
-
-		firstUpper = false;
-		firstLower = false;
-		firstNumber = false;
-		firstSpecial = false;
-		firstDefault = false;
-		switch (input.id) {
-			case 'firstDefault':
-				firstDefault = input.checked;
-				break;
-			case 'firstUpper':
-				firstUpper = input.checked;
-				break;
-			case 'firstLower':
-				firstLower = input.checked;
-				break;
-			case 'firstNumber':
-				firstNumber = input.checked;
-				break;
-			case 'firstSpecial':
-				firstSpecial = input.checked;
-				break;
-		}
-		console.log(firstDefault, firstUpper, firstLower, firstNumber, firstSpecial);
-	}
-
-	function generateUpperWord(len: Number): string {
+	function generateCharacters(source: string, maxSize: number): string {
 		let str = '';
-		for (let i = 0; i < len; i++) {
-			let index = Math.floor(Math.random() * upper.length);
-			str += upper[index];
+		const SIZE = source.length;
+		for (let i = 0; i < maxSize; i++) {
+			const index = Math.floor(Math.random() * SIZE);
+			str += source[index];
 		}
 		return str;
 	}
 
-	function generateLowerWord(len: Number): string {
-		let str = '';
-		for (let i = 0; i < len; i++) {
-			let index = Math.floor(Math.random() * lower.length);
-			str += lower[index];
-		}
-		return str;
-	}
-
-	function generateNumber(len: Number): string {
-		let str = '';
-		for (let i = 0; i < len; i++) {
-			let index = Math.floor(Math.random() * number.length);
-			str += number[index];
-		}
-		return str;
-	}
-
-	function generateSpecial(len: Number): string {
-		let str = '';
-		for (let i = 0; i < len; i++) {
-			let index = Math.floor(Math.random() * special.length);
-			str += special[index];
-		}
-		return str;
-	}
-
-	function getArray() {
-		return [includesLowerCase, includesNumber, includesSpecial, includesUpperCase].filter(
-			(item) => item === true
-		);
-	}
-
-	function generateCalcArray() {
-		const base = Math.round(wordLength / 2);
-		let arr = [
-			Math.floor(Math.random() * base),
-			Math.floor(Math.random() * base),
-			Math.round((Math.random() + 1) * base)
-		];
-		while (arr.reduce((acc, cur) => acc + cur) !== wordLength) {
-			arr = [
-				Math.floor(Math.random() * base),
-				Math.floor(Math.random() * base),
-				Math.floor(Math.random() * base)
-			];
-		}
-		console.log(arr);
-		return arr;
-	}
+	$: availableRule = [includesUpperCase, includesLowerCase, includesNumber, includesSpecial].filter(
+		(bool) => bool
+	);
 
 	function generateString() {
-		const str =
-			generateUpperWord(4) + generateLowerWord(4) + generateNumber(4) + generateSpecial(4);
-		const arr = str.split('');
-		result = arr.sort(() => Math.random() - Math.random()).join('');
+    const ra = Array()
+    let size = wordLength
+		let average = Math.floor(wordLength / availableRule.length);
+		average = average === Infinity ? 0 : average;
+		if (average) {
+      for (let i = availableRule.length; i > 0; i--) {
+        if (i === 1) {
+          ra.push(size)
+        } else {
+          ra.push(average)
+        }
+        size = size - average
+      }
+			const str =
+				generateCharacters(UPPER_CHARACTERS, upperSize) +
+				generateCharacters(LOWER_CHARACTERS, lowerSize) +
+				generateCharacters(NUMBER_CHARACTERS, numberSize) +
+				generateCharacters(SPECIAL_CHARACTERS, specialSize);
+			const arr = str.split('');
+			let _result = arr.sort(() => Math.random() - Math.random()).join('');
+			result = '';
+			for (let i = 0; i < _result.length; i++) {
+				result += _result[i];
+			}
+		}
+	}
+
+	function copyClipboard(event: Event) {
+		const input = event.target as HTMLInputElement;
+		input.select();
+		try {
+			navigator.clipboard.writeText(input.value);
+			if (!copiedOK) {
+				copiedOK = true;
+				setTimeout(() => {
+					copiedOK = false;
+					window.getSelection()?.empty();
+				}, 1500);
+			}
+		} catch (error) {
+			window.getSelection()?.empty();
+		}
 	}
 
 	onMount(() => {
@@ -166,11 +133,25 @@
 	});
 </script>
 
-<div class="flex justify-center items-center p-6">
+<div class="pg">
 	<div class="pg-card">
 		<div class="pg-card-field">
-			<input class="outline-none" readonly bind:value={result} placeholder="Abcdef1234&^&" />
-			<button {disabled} on:click={generateString}>
+			<input
+				name="result"
+				type="text"
+				on:click={copyClipboard}
+				class="outline-none"
+				readonly
+				bind:value={result}
+				placeholder="Abcdef1234&^&"
+			/>
+			<button
+				{disabled}
+				on:click={generateString}
+				on:mousedown={() => rotate.set(360)}
+				on:mouseup={() => rotate.set(0)}
+				style="transform: rotate({$rotate}deg)"
+			>
 				{@html syncLock}
 			</button>
 		</div>
@@ -192,28 +173,28 @@
 		<div class="p-4 mt-6">
 			<hr class="my-4" />
 			<div class="flex items-center mt-3">
-				<input on:change={inputCheckChange} type="checkbox" id="includesUpperCase" checked /><label
+				<input type="checkbox" id="includesUpperCase" bind:checked={includesUpperCase} /><label
 					class="ml-2 text-gray-500 text-sm"
 					for="includesUpperCase">包含大写字母(ABCDEF…)</label
 				>
 			</div>
 
 			<div class="flex items-center mt-3">
-				<input on:change={inputCheckChange} type="checkbox" id="includesLowerCase" checked /><label
+				<input type="checkbox" id="includesLowerCase" bind:checked={includesLowerCase} /><label
 					class="ml-2 text-gray-500 text-sm"
 					for="includesLowerCase">包含小写字母(abcdef…)</label
 				>
 			</div>
 
 			<div class="flex items-center mt-3">
-				<input on:change={inputCheckChange} type="checkbox" id="includesNumber" checked /><label
+				<input type="checkbox" id="includesNumber" bind:checked={includesNumber} /><label
 					class="ml-2 text-gray-500 text-sm"
 					for="includesNumber">包含数字(123456…)</label
 				>
 			</div>
 
 			<div class="flex items-center mt-3">
-				<input on:change={inputCheckChange} type="checkbox" id="includesSpecial" checked /><label
+				<input type="checkbox" id="includesSpecial" bind:checked={includesSpecial} /><label
 					class="ml-2 text-gray-500 text-sm"
 					for="includesSpecial">包含特殊字符(!@#$%^…)</label
 				>
@@ -224,56 +205,53 @@
 		<div class="p-4">
 			<div class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0">
 				<div class="flex items-center">
-					<input
-						type="radio"
-						name="first_letter"
-						id="firstDefault"
-						checked={firstDefault}
-						on:change={inputRadioChange}
-					/> <label for="firstDefault" class="ml-1">无</label>
+					<input type="radio" id="firstDefault" bind:group={firstLetter} value={0} />
+					<label for="firstDefault" class="ml-1">无</label>
 				</div>
 				<div class="flex items-center">
 					<input
 						type="radio"
-						name="first_letter"
 						id="firstUpper"
+						bind:group={firstLetter}
+						value={1}
 						disabled={!includesUpperCase}
-						checked={firstUpper}
-						on:change={inputRadioChange}
 					/> <label for="firstUpper" class="ml-1">首字大写</label>
 				</div>
 				<div class="flex items-center">
 					<input
 						type="radio"
-						name="first_letter"
 						id="firstLower"
-						checked={firstLower}
+						bind:group={firstLetter}
+						value={2}
 						disabled={!includesLowerCase}
-						on:change={inputRadioChange}
 					/>
 					<label for="firstLower" class="ml-1">首字小写</label>
 				</div>
 				<div class="flex items-center">
 					<input
 						type="radio"
-						name="first_letter"
 						id="firstNumber"
-						checked={firstNumber}
+						bind:group={firstLetter}
+						value={3}
 						disabled={!includesNumber}
-						on:change={inputRadioChange}
 					/> <label for="firstNumber" class="ml-1">首字数字</label>
 				</div>
 				<div class="flex items-center">
 					<input
 						type="radio"
-						name="first_letter"
 						id="firstSpecial"
-						checked={firstSpecial}
+						bind:group={firstLetter}
+						value={4}
 						disabled={!includesSpecial}
-						on:change={inputRadioChange}
 					/> <label for="firstSpecial" class="ml-1">首字特殊字符</label>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+
+{#if copiedOK}
+	<div class="toast" transition:fly={{ y: -15, duration: 150 }}>
+		<p>复制成功!</p>
+	</div>
+{/if}

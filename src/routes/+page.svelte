@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { spring } from 'svelte/motion';
   import { syncLock } from '../svg/image';
@@ -74,17 +74,12 @@
     }
   });
 
-  $: includeRules = rules.filter((rule) => rule.include);
-
   $: disabled = rules.filter((rule) => !rule.include).length === rules.length;
-
-  function randomLength(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
 
   function inputRangeChange(event: Event) {
     const input = event.target as HTMLInputElement;
     charactersLength = Number(input.value);
+    generateString();
   }
 
   function generateCharacters(source: string, maxlength: number): string {
@@ -101,7 +96,8 @@
     return Math.floor(Math.random() * maxLength);
   }
 
-  function allocationLength() {
+  function allocationRulesLength() {
+    const includeRules = rules.filter((rule) => rule.include);
     const _length = Math.floor(charactersLength / includeRules.length);
     const _remainder = charactersLength % includeRules.length;
     includeRules.map((rule) => (rule.length = _length));
@@ -109,13 +105,15 @@
       const randomIdx = randomIndex(includeRules.length);
       includeRules[randomIdx].length += _remainder;
     }
+    return includeRules;
   }
 
   function mergeCharacter() {
-    allocationLength();
-    includeRules.map((rule) => {
+    const _rules = allocationRulesLength();
+    _rules.map((rule) => {
       rule.result = generateCharacters(rule.characters, rule.length);
     });
+    return _rules;
   }
 
   function sortCharacters(arr: Array<Rule>) {
@@ -126,21 +124,21 @@
         rule.result = rule.result.substring(1);
       }
     });
-    const _reuslt = includeRules.map((rule) => rule.result).join('');
+    const _reuslt = arr.map((rule) => rule.result).join('');
     return firstCharacter + _reuslt;
   }
 
   function shuttleCharacters() {
-    mergeCharacter();
-    const charArr = includeRules;
-    const characters = charArr.sort(() => Math.random() - Math.random());
-    const _reuslt = sortCharacters(characters)
-    return _reuslt
+    const _rules = mergeCharacter();
+    const characters = _rules.sort(() => Math.random() - Math.random());
+    const _reuslt = sortCharacters(characters);
+    return _reuslt;
   }
 
-  function generateString() {
+  function generateString(event?: Event) {
     result = '';
     result = shuttleCharacters();
+    rules.map((rule) => (rule.result = undefined));
   }
 
   function copyClipboard(event: Event) {
@@ -161,7 +159,9 @@
   }
 
   onMount(() => {
-    generateString();
+    if (!result) {
+      generateString();
+    }
   });
 </script>
 
@@ -206,10 +206,12 @@
       <hr class="my-4" />
       {#each rules as { name, include, includeText } (name)}
         <div class="flex items-center mt-3">
-          <input type="checkbox" id="includes_{name}" bind:checked={include} /><label
-            class="ml-2 text-gray-500 text-sm"
-            for="includes_{name}">{includeText}</label
-          >
+          <input
+            type="checkbox"
+            id="includes_{name}"
+            bind:checked={include}
+            on:change={generateString}
+          /><label class="ml-2 text-gray-500 text-sm" for="includes_{name}">{includeText}</label>
         </div>
       {/each}
       <hr class="mt-4" />
@@ -218,7 +220,13 @@
     <div class="p-4">
       <div class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0">
         <div class="flex items-center">
-          <input type="radio" id="firstDefault" bind:group={firstLetter} value={0} />
+          <input
+            type="radio"
+            id="firstDefault"
+            bind:group={firstLetter}
+            value={0}
+            on:change={generateString}
+          />
           <label for="firstDefault" class="ml-1">无</label>
         </div>
         {#each rules as { name, include, first, firstText } (name)}
@@ -229,6 +237,7 @@
               bind:group={firstLetter}
               value={first}
               disabled={!include}
+              on:change={generateString}
             /> <label for="first_{name}" class="ml-1">{firstText}</label>
           </div>
         {/each}

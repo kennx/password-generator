@@ -10,22 +10,52 @@
     SPECIAL_CHARACTERS
   } from '../constants/characters';
   import './page.css';
+  import type Rule from '../interface/rule.interface';
+
+  const rules: Array<Rule> = [
+    {
+      name: 'upperLetter',
+      include: true,
+      includeText: '包含大写字母(ABCDEF…)',
+      first: 1,
+      length: 3,
+      firstText: '首字大写',
+      characters: UPPER_CHARACTERS
+    },
+    {
+      name: 'lowerLetter',
+      include: true,
+      includeText: '包含小写字母(abcdef…)',
+      first: 2,
+      length: 3,
+      firstText: '首字小写',
+      characters: LOWER_CHARACTERS
+    },
+    {
+      name: 'number',
+      include: true,
+      includeText: '包含数字(123456…)',
+      first: 3,
+      firstText: '首字数字',
+      length: 3,
+      characters: NUMBER_CHARACTERS
+    },
+    {
+      name: 'special',
+      include: true,
+      includeText: '包含特殊字符(!@#$%^…)',
+      first: 4,
+      firstText: '首字特殊字符',
+      length: 3,
+      characters: SPECIAL_CHARACTERS
+    }
+  ];
 
   let result = '';
 
   let copiedOK = false;
-  let clicked = false;
 
-  let wordLength = 12;
-  let includesUpperCase = true;
-  let includesLowerCase = true;
-  let includesNumber = true;
-  let includesSpecial = true;
-
-  let upperSize = 3;
-  let lowerSize = 3;
-  let numberSize = 3;
-  let specialSize = 3;
+  let charactersLength = 12;
 
   spring({
     stiffness: 0.1,
@@ -35,30 +65,18 @@
 
   let firstLetter = 0;
 
-  $: if (!includesUpperCase && firstLetter === 1) {
-    firstLetter = 0;
-  }
-  $: if (!includesLowerCase && firstLetter === 2) {
-    firstLetter = 0;
-  }
-  $: if (!includesNumber && firstLetter === 3) {
-    firstLetter = 0;
-  }
-  $: if (!includesSpecial && firstLetter === 4) {
-    firstLetter = 0;
-  }
+  $: rules.map((rule) => {
+    if (!rule.include) {
+      if (firstLetter === rule.first) {
+        firstLetter = 0;
+      }
+      rule.length = 0;
+    }
+  });
 
-  $: if (!includesUpperCase) {
-    upperSize = 0;
-  } else if (!includesLowerCase) {
-    lowerSize = 0;
-  } else if (!includesNumber) {
-    numberSize = 0;
-  } else if (!includesSpecial) {
-    specialSize = 0;
-  }
+  $: includeRules = rules.filter((rule) => rule.include);
 
-  $: disabled = !includesUpperCase && !includesLowerCase && !includesNumber && !includesSpecial;
+  $: disabled = rules.filter((rule) => !rule.include).length === rules.length;
 
   function randomLength(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -66,49 +84,63 @@
 
   function inputRangeChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    wordLength = Number(input.value);
+    charactersLength = Number(input.value);
   }
 
-  function generateCharacters(source: string, maxSize: number): string {
+  function generateCharacters(source: string, maxlength: number): string {
     let str = '';
-    const SIZE = source.length;
-    for (let i = 0; i < maxSize; i++) {
-      const index = Math.floor(Math.random() * SIZE);
+    const length = source.length;
+    for (let i = 0; i < maxlength; i++) {
+      const index = Math.floor(Math.random() * length);
       str += source[index];
     }
     return str;
   }
 
-  $: availableRule = [includesUpperCase, includesLowerCase, includesNumber, includesSpecial].filter(
-    (bool) => bool
-  );
+  function randomIndex(maxLength: number) {
+    return Math.floor(Math.random() * maxLength);
+  }
+
+  function allocationLength() {
+    const _length = Math.floor(charactersLength / includeRules.length);
+    const _remainder = charactersLength % includeRules.length;
+    includeRules.map((rule) => (rule.length = _length));
+    if (_remainder > 0) {
+      const randomIdx = randomIndex(includeRules.length);
+      includeRules[randomIdx].length += _remainder;
+    }
+  }
+
+  function mergeCharacter() {
+    allocationLength();
+    includeRules.map((rule) => {
+      rule.result = generateCharacters(rule.characters, rule.length);
+    });
+  }
+
+  function sortCharacters(arr: Array<Rule>) {
+    let firstCharacter = '';
+    arr.map((rule) => {
+      if (rule.first === firstLetter && rule.result) {
+        firstCharacter = rule.result[0];
+        rule.result = rule.result.substring(1);
+      }
+    });
+    const _reuslt = includeRules.map((rule) => rule.result).join('');
+    return firstCharacter + _reuslt;
+  }
+
+  function shuttleCharacters() {
+    mergeCharacter();
+    const charArr = includeRules;
+    const characters = charArr.sort(() => Math.random() - Math.random());
+    const _reuslt = sortCharacters(characters)
+    return _reuslt
+  }
 
   function generateString() {
-    const ra = Array();
-    let size = wordLength;
-    let average = Math.floor(wordLength / availableRule.length);
-    average = average === Infinity ? 0 : average;
-    if (average) {
-      for (let i = availableRule.length; i > 0; i--) {
-        if (i === 1) {
-          ra.push(size);
-        } else {
-          ra.push(average);
-        }
-        size = size - average;
-      }
-      const str =
-        generateCharacters(UPPER_CHARACTERS, upperSize) +
-        generateCharacters(LOWER_CHARACTERS, lowerSize) +
-        generateCharacters(NUMBER_CHARACTERS, numberSize) +
-        generateCharacters(SPECIAL_CHARACTERS, specialSize);
-      const arr = str.split('');
-      let _result = arr.sort(() => Math.random() - Math.random()).join('');
-      result = '';
-      for (let i = 0; i < _result.length; i++) {
-        result += _result[i];
-      }
-    }
+    result = '';
+    result = shuttleCharacters();
   }
 
   function copyClipboard(event: Event) {
@@ -164,41 +196,22 @@
         class="flex-1"
         max="24"
         min="6"
-        bind:value={wordLength}
+        bind:value={charactersLength}
         step="1"
       />
-      <div class="text-gray-400 ml-2 text-sm">长度 {wordLength}</div>
+      <div class="text-gray-400 ml-2 text-sm">长度 {charactersLength}</div>
     </div>
 
     <div class="p-4 mt-6">
       <hr class="my-4" />
-      <div class="flex items-center mt-3">
-        <input type="checkbox" id="includesUpperCase" bind:checked={includesUpperCase} /><label
-          class="ml-2 text-gray-500 text-sm"
-          for="includesUpperCase">包含大写字母(ABCDEF…)</label
-        >
-      </div>
-
-      <div class="flex items-center mt-3">
-        <input type="checkbox" id="includesLowerCase" bind:checked={includesLowerCase} /><label
-          class="ml-2 text-gray-500 text-sm"
-          for="includesLowerCase">包含小写字母(abcdef…)</label
-        >
-      </div>
-
-      <div class="flex items-center mt-3">
-        <input type="checkbox" id="includesNumber" bind:checked={includesNumber} /><label
-          class="ml-2 text-gray-500 text-sm"
-          for="includesNumber">包含数字(123456…)</label
-        >
-      </div>
-
-      <div class="flex items-center mt-3">
-        <input type="checkbox" id="includesSpecial" bind:checked={includesSpecial} /><label
-          class="ml-2 text-gray-500 text-sm"
-          for="includesSpecial">包含特殊字符(!@#$%^…)</label
-        >
-      </div>
+      {#each rules as { name, include, includeText } (name)}
+        <div class="flex items-center mt-3">
+          <input type="checkbox" id="includes_{name}" bind:checked={include} /><label
+            class="ml-2 text-gray-500 text-sm"
+            for="includes_{name}">{includeText}</label
+          >
+        </div>
+      {/each}
       <hr class="mt-4" />
     </div>
 
@@ -208,43 +221,17 @@
           <input type="radio" id="firstDefault" bind:group={firstLetter} value={0} />
           <label for="firstDefault" class="ml-1">无</label>
         </div>
-        <div class="flex items-center">
-          <input
-            type="radio"
-            id="firstUpper"
-            bind:group={firstLetter}
-            value={1}
-            disabled={!includesUpperCase}
-          /> <label for="firstUpper" class="ml-1">首字大写</label>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="radio"
-            id="firstLower"
-            bind:group={firstLetter}
-            value={2}
-            disabled={!includesLowerCase}
-          />
-          <label for="firstLower" class="ml-1">首字小写</label>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="radio"
-            id="firstNumber"
-            bind:group={firstLetter}
-            value={3}
-            disabled={!includesNumber}
-          /> <label for="firstNumber" class="ml-1">首字数字</label>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="radio"
-            id="firstSpecial"
-            bind:group={firstLetter}
-            value={4}
-            disabled={!includesSpecial}
-          /> <label for="firstSpecial" class="ml-1">首字特殊字符</label>
-        </div>
+        {#each rules as { name, include, first, firstText } (name)}
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="first_{name}"
+              bind:group={firstLetter}
+              value={first}
+              disabled={!include}
+            /> <label for="first_{name}" class="ml-1">{firstText}</label>
+          </div>
+        {/each}
       </div>
     </div>
   </div>

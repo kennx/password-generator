@@ -12,7 +12,8 @@ const config = {
       pages: 'build',
       assets: 'build',
       fallback: 'index.html'
-    })
+    }),
+    appDir: 'password-generator'
   }
 };
 

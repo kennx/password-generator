@@ -7,6 +7,10 @@ on:
   paths:
     - .github/**.yaml
     - src/**.svelte
+    - src/**.ts
+    - src/**.css
+    - src/**.js
+    - src/**.svg
   workflow_dispatch:
 
 jobs:

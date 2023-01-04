@@ -142,20 +142,28 @@
     rules.map((rule) => (rule.result = undefined));
   }
 
-  function copyClipboard(event: Event) {
+  async function copyClipboard(event: Event) {
+    let tid: number | undefined;
     const input = event.target as HTMLInputElement;
     input.select();
-    try {
-      navigator.clipboard.writeText(input.value);
-      if (!copiedOK) {
-        copiedOK = true;
-        setTimeout(() => {
-          copiedOK = false;
-          window.getSelection()?.empty();
-        }, 1500);
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(input.value);
+      } catch (error) {
+        console.log(error);
+        window.getSelection()?.empty();
       }
-    } catch (error) {
-      window.getSelection()?.empty();
+    } else {
+      document.execCommand('copy', false);
+    }
+
+    if (!copiedOK && window.getSelection()) {
+      copiedOK = true;
+      tid = window.setTimeout(() => {
+        copiedOK = false;
+        window.getSelection()?.empty();
+        window.clearTimeout(tid);
+      }, 1500);
     }
   }
 
@@ -219,7 +227,9 @@
     </div>
 
     <div class="p-4">
-      <div class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0 max-sm:space-y-3">
+      <div
+        class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0 max-sm:space-y-3"
+      >
         <div class="flex items-center">
           <input
             type="radio"
@@ -246,7 +256,6 @@
     </div>
   </div>
 </div>
-
 
 {#if copiedOK}
   <div class="toast" transition:fly={{ y: -15, duration: 150 }}>

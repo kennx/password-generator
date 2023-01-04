@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
 body {
-  @apply h-screen bg-[length:10px_10px] overflow-hidden;
+  @apply bg-[length:10px_10px] box-border overflow-y-hidden;
   background-image: radial-gradient(theme(colors.gray.400) 0.5px, theme(colors.gray.100) 0.5px);
 }

@@ -1,0 +1,36 @@
+name: Publish GitHub Pages
+
+on:
+  push:
+    branches: [ master ]
+
+
+jobs:
+  build:
+    runs-on: unbuntu-latest
+
+  steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Install NodeJS
+      uses: actions/setup-node@v2.1.4
+      with:
+        node-version: '18.12.1'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build App
+      run: npm run build
+
+
+    - name: Github Pages
+      uses: crazy-max/ghaction-github-pages@v2.2.0
+      with:
+        target_branch: gh-pages
+        keep_history: true
+        build_dir: build
+        jekyll: false
+
+

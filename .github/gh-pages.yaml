@@ -2,8 +2,7 @@ name: Publish GitHub Pages
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
       - .github/workflows/gh-pages.yml
       - package.json
@@ -17,24 +16,19 @@ on:
       - src/**.svg
       - src/**.png
       - src/**.jpg
-
-
-
-
-
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: unbuntu-latest
+    runs-on: ubuntu-latest
 
   steps:
-
     - uses: actions/checkout@v2
 
     - name: Install NodeJS
       uses: actions/setup-node@v2.1.4
       with:
-        node-version: '18.12.1'
+        node-version: '18'
 
     - name: Install Dependencies
       run: npm install
@@ -42,13 +36,10 @@ jobs:
     - name: Build App
       run: npm run build
 
-
     - name: Github Pages
-      uses: crazy-max/ghaction-github-pages@v2.2.0
+      uses: crazy-max/ghaction-github-pages@v3.1.0
       with:
         target_branch: gh-pages
         keep_history: true
         build_dir: build
         jekyll: false
-
-

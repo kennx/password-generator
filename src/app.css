@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply scroll-auto h-screen bg-[length:10px_10px];
+  background-image: radial-gradient(theme(colors.gray.400) 0.5px, theme(colors.gray.100) 0.5px);
+}

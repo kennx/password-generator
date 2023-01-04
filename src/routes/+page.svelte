@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte';
+  export const ssr = false;
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { spring } from 'svelte/motion';
   import { syncLock } from '../svg/image';

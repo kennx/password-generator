@@ -1,17 +1,19 @@
 name: Publish GitHub Pages
+
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
-  paths:
-    - .github/**.yaml
+    branches: [ master ]
+    paths:
+      - .github/**.yaml
     - src/**.svelte
     - src/**.ts
     - src/**.css
     - src/**.js
     - src/**.svg
+
   workflow_dispatch:
+
+
 
 jobs:
   build:

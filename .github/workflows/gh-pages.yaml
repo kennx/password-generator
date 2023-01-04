@@ -5,11 +5,11 @@ on:
     branches: [ master ]
     paths:
       - .github/**.yaml
-    - src/**.svelte
-    - src/**.ts
-    - src/**.css
-    - src/**.js
-    - src/**.svg
+      - src/**.svelte
+      - src/**.ts
+      - src/**.css
+      - src/**.js
+      - src/**.svg
 
   workflow_dispatch:
 

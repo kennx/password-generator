@@ -219,7 +219,7 @@
     </div>
 
     <div class="p-4">
-      <div class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0">
+      <div class="flex flex-row max-sm:flex-col text-sm text-gray-500 space-x-4 max-sm:space-x-0 max-sm:space-y-3">
         <div class="flex items-center">
           <input
             type="radio"

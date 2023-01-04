@@ -6,7 +6,6 @@
   "scope": "/password-generator",
   "theme_color": "#f3f4f6",
   "background_color": "#f3f4f6",
-  "orientation": "any",
   "description": "Helps you create random password.",
   "display": "minimal-ui",
   "icons": [

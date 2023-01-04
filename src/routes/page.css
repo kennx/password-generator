@@ -1,3 +1,7 @@
+* {
+  @apply touch-manipulation
+}
+
 div {
   @apply transition-all;
 }

@@ -1,3 +1,7 @@
+div {
+  @apply transition-all;
+}
+
 .pg {
   @apply flex justify-center items-center p-6;
 }
@@ -10,7 +14,7 @@
   @apply w-full flex antialiased text-lg bg-gray-50 py-2 px-4 rounded-md font-mono;
 }
 .pg-card-field input[readonly] {
-  @apply flex-1 bg-transparent;
+  @apply flex-1 bg-transparent max-sm:text-sm transition-all;
 }
 
 input[name='result'] {

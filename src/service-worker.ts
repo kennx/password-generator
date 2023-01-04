@@ -10,7 +10,9 @@ const to_cache = build.concat(files);
 const staticAssets = new Set(to_cache);
 
 // Install Event:
-worker.addEventListener('install', (event) => {
+worker.addEventListener('install', (event: ExtendableEvent) => {
+  console.log('[Service Worker] Install', event);
+  console.log('cache version:', version);
   event.waitUntil(
     caches
       .open(FILES)

@@ -48,15 +48,6 @@ worker.addEventListener('fetch', async (event) => {
 });
 
 worker.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(
-        keyList.map((key) => {
-          if (cacheName.indexOf(key) === -1) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
+  console.log('[PWA Builder] Claiming clients for current page');
+  event.waitUntil(worker.clients.claim());
 });

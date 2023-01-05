@@ -4,8 +4,6 @@ import { vitePreprocess } from '@sveltejs/kit/vite';
 
 const dev = process.argv.includes('dev');
 
-console.log(dev, '------>>>>>>>');
-
 const adapterFunc = dev
   ? adapter()
   : adapter(

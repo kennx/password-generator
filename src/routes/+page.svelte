@@ -119,20 +119,24 @@
 
   function sortCharacters(arr: Array<Rule>) {
     let firstCharacter = '';
+    let _characters = '';
     arr.map((rule) => {
       if (rule.first === firstLetter && rule.result) {
         firstCharacter = rule.result[0];
         rule.result = rule.result.substring(1);
       }
+      _characters += rule.result;
     });
-    const _reuslt = arr.map((rule) => rule.result).join('');
-    return firstCharacter + _reuslt;
+    _characters = _characters
+      .split('')
+      .sort(() => Math.random() * 10 - Math.random() * 10)
+      .join('');
+    return firstCharacter + _characters;
   }
 
   function shuttleCharacters() {
     const _rules = mergeCharacter();
-    const characters = _rules.sort(() => Math.random() - Math.random());
-    const _reuslt = sortCharacters(characters);
+    const _reuslt = sortCharacters(_rules);
     return _reuslt;
   }
 

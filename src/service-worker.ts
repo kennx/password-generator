@@ -4,52 +4,53 @@
 import { build, files, version } from '$service-worker';
 
 // Initializations:
-const worker = (self as unknown) as ServiceWorkerGlobalScope;
-const FILES = `cache${version}`;
-const to_cache = build.concat(files);
-const staticAssets = new Set(to_cache);
+const worker = self as unknown as ServiceWorkerGlobalScope;
+const cacheName = `pg-${version}`;
+const cacheList = build.concat(files);
 
-// Install Event:
 worker.addEventListener('install', (event) => {
-	event.waitUntil(caches.open(FILES).then((cache) => cache.addAll(to_cache)).then(() => { worker.skipWaiting() }));
+  worker.skipWaiting();
+  const cachePromise = caches.open(cacheName).then((cache) => {
+    console.log('[Service Worker] Event [Install]: ', cacheList);
+    return cache.addAll(cacheList);
+  });
+  event.waitUntil(cachePromise);
 });
 
-// Activation Event:
+worker.addEventListener('fetch', async (event) => {
+  const request = event.request;
+  const matchURL = request.url.indexOf('http') === 0 && request.method === 'GET';
+  if (matchURL) {
+    event.respondWith(
+      (async () => {
+        const cacheResponse = await caches.match(request);
+        console.log(`[Service Worker] Fetching resource: ${request.url}`);
+        if (cacheResponse) {
+          if (cacheResponse.ok && cacheResponse.status < 400) {
+            console.warn('Cache Response:', cacheResponse);
+            return cacheResponse;
+          }
+        }
+        const response = await fetch(request);
+        const cacheStorage = await caches.open(cacheName);
+        console.log(`[Service Worker] Caching new resource: ${request.url}`);
+        cacheStorage.put(request, response.clone());
+        return response;
+      })()
+    );
+  }
+});
+
 worker.addEventListener('activate', (event) => {
-	event.waitUntil(caches.keys().then(async (keys) => {
-    for(const key of keys) {
-      if(key !== FILES) await caches.delete(key);
-    }
-    worker.clients.claim();
-	}));
-});
-
-// Fetch & Cache Event:
-async function fetchAndCache(request: Request) {
-	const cache = await caches.open(`offline${version}`);
-	try {
-		const response = await fetch(request);
-		cache.put(request, response.clone());
-		return response;
-	} catch(err) {
-		const response = await cache.match(request);
-		if(response) return response;
-		throw err;
-	}
-}
-
-// Fetch Event:
-worker.addEventListener('fetch', (event) => {
-	if(event.request.method !== 'GET' || event.request.headers.has('range')) return;
-	const url = new URL(event.request.url);
-	const isHttp = url.protocol.startsWith('http');
-	const isDevServerRequest = url.hostname === self.location.hostname && url.port !== self.location.port;
-	const isStaticAsset = url.host === self.location.host && staticAssets.has(url.pathname);
-	const skipBecauseUncached = event.request.cache === 'only-if-cached' && !isStaticAsset;
-	if(isHttp && !isDevServerRequest && !skipBecauseUncached) {
-		event.respondWith((async () => {
-      const cachedAsset = isStaticAsset && (await caches.match(event.request));
-      return cachedAsset || fetchAndCache(event.request);
-    })());
-	}
+  event.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (cacheName.indexOf(key) === -1) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
 });

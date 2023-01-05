@@ -11,7 +11,7 @@ const cacheList = build.concat(files);
 worker.addEventListener('install', (event) => {
   worker.skipWaiting();
   const cachePromise = caches.open(cacheName).then((cache) => {
-    console.log('[Service Worker] Event [Install]: ', cacheList);
+    // console.log('[Service Worker] Event [Install]: ', cacheList);
     return cache.addAll(cacheList);
   });
   event.waitUntil(cachePromise);
@@ -24,16 +24,16 @@ worker.addEventListener('fetch', async (event) => {
     event.respondWith(
       (async () => {
         const cacheResponse = await caches.match(request);
-        console.log(`[Service Worker] Fetching resource: ${request.url}`);
+        // console.log(`[Service Worker] Fetching resource: ${request.url}`);
         if (cacheResponse) {
           if (cacheResponse.ok && cacheResponse.status < 400) {
-            console.warn('Cache Response:', cacheResponse);
+            // console.warn('Cache Response:', cacheResponse);
             return cacheResponse;
           }
         }
         const response = await fetch(request);
         const cacheStorage = await caches.open(cacheName);
-        console.log(`[Service Worker] Caching new resource: ${request.url}`);
+        // console.log(`[Service Worker] Caching new resource: ${request.url}`);
         cacheStorage.put(request, response.clone());
         return response;
       })()

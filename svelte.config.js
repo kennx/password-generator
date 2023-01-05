@@ -1,7 +1,19 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-auto';
+import vercel from '@sveltejs/adapter-vercel';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
 const dev = process.argv.includes('dev');
+
+console.log(dev, '------>>>>>>>');
+
+const adapterFunc = dev
+  ? adapter()
+  : adapter(
+      vercel({
+        edge: false,
+        split: false
+      })
+    );
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,11 +22,7 @@ const config = {
   preprocess: vitePreprocess(),
 
   kit: {
-    adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: 'index.html'
-    })
+    adapter: adapterFunc
   }
 };
 

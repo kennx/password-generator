@@ -6,13 +6,7 @@ import { build, files, version } from '$service-worker';
 // Initializations:
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const cacheName = `pg-${version}`;
-const cacheList = build.concat(
-  files,
-  '/password-generator',
-  '/password-generator/',
-  '/password-generator/index.html'
-);
-console.log(cacheList);
+const cacheList = build.concat(files);
 
 worker.addEventListener('install', (event) => {
   worker.skipWaiting();

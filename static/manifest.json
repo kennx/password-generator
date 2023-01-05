@@ -1,6 +1,7 @@
 {
-  "start_url": "/password-generator/",
-  "id": "/password-generator/",
+  "start_url": ".",
+  "id": ".",
+  "scope": ".",
   "name": "Password Generator",
   "short_name": "Password Generator",
   "orientation": "any",
